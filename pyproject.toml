@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sibkd-mcp"
+version = "1.0.0"
+description = "Pantau dan kelola laporan BKD SISTER v2 di SIBKD LLDIKTI III sebagai pustaka Python, REST API, atau MCP server"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Alfa Yohannis" }]
+keywords = ["sibkd", "lldikti", "bkd", "sister", "serdos", "mcp"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Education",
+    "Topic :: Education",
+]
+
+# Hanya yang dibutuhkan pemakaian sebagai pustaka. FastAPI dan mcp ada di extras
+# supaya proyek yang cuma butuh KlienSibkd tidak ikut memasang keduanya.
+# certifi dipakai langsung untuk menyusun rantai sertifikat TLS SIBKD.
+dependencies = [
+    "requests",
+    "certifi",
+    "beautifulsoup4",
+    "lxml",
+    "python-dotenv",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+api = ["fastapi", "uvicorn[standard]", "python-multipart"]
+# MCPServer baru ada di mcp 2.x; 1.x memakai nama lama dan tidak bisa dipakai
+mcp = ["mcp>=2"]
+uji = ["pytest"]
+semua = ["sibkd-mcp[api,mcp,uji]"]
+
+[project.urls]
+Homepage = "https://github.com/alfa-yohannis/sibkd-mcp"
+Issues = "https://github.com/alfa-yohannis/sibkd-mcp/issues"
+
+[project.scripts]
+sibkd-status = "sibkd_mcp.cli:jalankan_status"
+sibkd-detail = "sibkd_mcp.cli:jalankan_detail"
+sibkd-pengumuman = "sibkd_mcp.cli:jalankan_pengumuman"
+sibkd-unduh = "sibkd_mcp.cli:jalankan_unduh"
+sibkd-unggah = "sibkd_mcp.cli:jalankan_unggah"
+sibkd-lanjut = "sibkd_mcp.cli:jalankan_lanjut"
+sibkd-tunda = "sibkd_mcp.cli:jalankan_tunda"
+sibkd-sinkron = "sibkd_mcp.cli:jalankan_sinkron"
+sibkd-mcp = "sibkd_mcp.mcp_server:jalankan"
+sibkd-petakan = "sibkd_mcp.petakan_form:jalankan"
+
+[tool.setuptools.packages.find]
+include = ["sibkd_mcp*"]
+
+# Sertifikat antara Sectigo yang tidak dikirim server SIBKD; lihat rantai_tls.py
+[tool.setuptools.package-data]
+sibkd_mcp = ["sertifikat/*.pem"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

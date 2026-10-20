@@ -1,0 +1,59 @@
+# Setelan non-rahasia SIBKD MCP.
+#
+# Salin ke sibkd.yaml lalu ubah yang perlu saja. Semua baris di bawah boleh
+# tetap dikomentari, nilai bawaannya sudah tertulis di tiap baris.
+#
+# Rahasia TIDAK ditaruh di sini. Username (NIDN) dan password ada di .env, yang
+# tidak pernah ikut ter-commit. Berkas ini aman dibagikan ke sesama dosen.
+#
+# Urutan yang menang: environment -> .env -> sibkd.yaml -> nilai bawaan.
+# Di environment dan .env namanya berawalan SIBKD_ dan huruf besar
+# (SIBKD_BASE_URL); di berkas ini tanpa awalan dan huruf kecil (base_url).
+
+# --- Instance SIBKD --------------------------------------------------------
+# Kosong berarti diambil dari SIBKD_WEBSITE di .env (asal alamatnya saja), lalu
+# alamat bawaan di bawah.
+# base_url: https://sibkd-lldikti3.kemdiktisaintek.go.id
+# nama_instansi: LLDIKTI Wilayah III   # hanya label pada judul API dan instruksi MCP
+
+# Path halaman di dalam SIBKD. Ubah hanya kalau SIBKD memindahkannya.
+# path_login: /login/login
+# path_beranda: /usulan
+# path_bkd: /dosen/bkdsister_v2
+# path_pengumuman: /all_pengumuman
+
+# Endpoint penulisan, relatif terhadap path_bkd. {id_periode} dan {bulan} diisi
+# dari halaman detail; lanjut_proses juga memakai nilai golongan penyetaraan
+# yang dicetak halaman itu. Garis miring yang hilang pada
+# endpoint_sinkron_pendidikan memang begitu di halaman SIBKD (lihat README).
+# endpoint_unggah: upload_laporan_bkd_sister
+# endpoint_lanjut: lanjut_proses/{id_periode}/{bulan}/{gol_penyetaraan}/{thn_masa_kerja}/{bln_masa_kerja}/{tgl_acuan}
+# endpoint_tunda: tunda_proses/{id_periode}/{bulan}
+# endpoint_sinkron_identitas: update_miror_sister/{id_periode}/{bulan}
+# endpoint_sinkron_homebase: update_homebase_sister/{id_periode}/{bulan}
+# endpoint_sinkron_pendidikan: update_rwy_pend_sister{id_periode}/{bulan}
+# endpoint_sinkron_jafung: api_jafung/{id_periode}/{bulan}
+# endpoint_sinkron_kepangkatan: api_kepangkatan_nonapi/{id_periode}/{bulan}
+
+# --- TLS -------------------------------------------------------------------
+# Server SIBKD tidak mengirim sertifikat antaranya. Paket ini membawa sendiri
+# sertifikat antara Sectigo dan menambahkannya ke bundel certifi. Isi ca_bundle
+# hanya kalau Anda ingin memakai bundel CA sendiri (berkas PEM atau direktori
+# hash OpenSSL) sebagai gantinya; path relatif dihitung dari akar proyek.
+# Verifikasi sertifikat tidak bisa dimatikan.
+# ca_bundle: /etc/ssl/certs/ca-certificates.crt
+
+# --- Unggah laporan --------------------------------------------------------
+# Batas ukuran PDF yang diperiksa sebelum mengunggah, dalam KB. Halaman SIBKD
+# menulis "5 MB" tetapi skripnya memeriksa 5048 KB; nilai bawaan mengikuti skrip.
+# ukuran_maks_kb: 5048
+
+# --- Batas waktu jaringan --------------------------------------------------
+# Naikkan kalau jaringan ke SIBKD lambat.
+# batas_login_detik: 60
+# batas_halaman_detik: 120      # GET halaman dan unduhan berkas
+# batas_kirim_detik: 300        # POST penulisan, termasuk unggah PDF
+
+# --- Lain-lain -------------------------------------------------------------
+# umur_sesi_detik: 900          # lama sesi login disimpan REST API
+# user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"

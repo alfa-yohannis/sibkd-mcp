@@ -1,0 +1,7 @@
+# Daftar dependensi yang sebenarnya ada di pyproject.toml. Berkas ini hanya
+# jalan pintas supaya `pip install -r requirements.txt` tetap bekerja, tanpa
+# menyalin daftarnya dua kali (yang cepat sekali jadi tidak sinkron).
+#
+#   pip install -e .            pustaka saja
+#   pip install -e ".[semua]"   + REST API, MCP, dan pytest
+-e .[semua]

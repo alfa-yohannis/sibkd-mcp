@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Titik masuk SIBKD MCP. Virtualenv dan dependensinya disiapkan sendiri pada
+# jalankan pertama.
+#
+#   ./sibkd status                                 # periode x bulan, status laporan, berkas BKD
+#   ./sibkd detail oktober                         # rincian satu bulan (data pribadi disamarkan)
+#   ./sibkd pengumuman                             # informasi terbaru dan daftar pengumuman
+#   ./sibkd unduh laporan --tujuan bukti/bkd       # PDF laporan BKD periode aktif
+#   ./sibkd unduh pengumuman --cari tunjangan      # berkas pengumuman
+#   ./sibkd unggah oktober laporan.pdf --uji-coba  # unggah PDF laporan (menulis)
+#   ./sibkd sinkron oktober jafung --uji-coba      # tarik ulang data dari SISTER (menulis)
+#   ./sibkd lanjut oktober --uji-coba              # tampilkan pernyataan persetujuan (menulis)
+#   ./sibkd tunda oktober --uji-coba               # jadikan laporan Tunda (menulis)
+#   ./sibkd petakan /dosen/bkdsister_v2
+#   ./sibkd api            # REST API di http://localhost:8000 (PORT=9001 untuk ganti port)
+#   ./sibkd mcp            # MCP server lewat stdio
+#   ./sibkd uji            # unit test
+
+set -euo pipefail
+
+AKAR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV="${SIBKD_VENV:-$AKAR/.venv}"
+PYTHON="$VENV/bin/python"
+
+# Akar proyek menentukan letak .env, sibkd.yaml, dan data/, serta titik hitung
+# path relatif. Bawaannya direktori aplikasi ini sendiri; aplikasi tidak pernah
+# menengok ke direktori di atasnya. Ruang kerja yang lebih besar bisa menunjuk
+# direktorinya sendiri lewat SIBKD_AKAR_PROYEK sebelum memanggil ini.
+export SIBKD_AKAR_PROYEK="${SIBKD_AKAR_PROYEK:-${BKD_AKAR_PROYEK:-$AKAR}}"
+
+if [[ ! -x "$PYTHON" ]]; then
+	echo "Membuat virtualenv di $VENV" >&2
+	python3 -m venv "$VENV"
+fi
+
+# Penanda ini ikut berubah setiap pyproject.toml disunting, jadi paket baru
+# otomatis terpasang tanpa perlu mengingat menjalankan pip. Dipasang sebagai
+# paket (editable) supaya `import sibkd_mcp` berperilaku persis seperti di
+# proyek lain yang memasangnya dari PyPI.
+PENANDA="$VENV/.paket-terpasang"
+if [[ ! -f "$PENANDA" || "$AKAR/pyproject.toml" -nt "$PENANDA" ]]; then
+	echo "Memasang sibkd-mcp beserta dependensinya" >&2
+	"$VENV/bin/pip" install --quiet --upgrade pip
+	"$VENV/bin/pip" install --quiet -e "$AKAR[semua]"
+	touch "$PENANDA"
+fi
+
+bantuan() {
+	sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \?//'
+	exit 2
+}
+
+PERINTAH="${1:-}"
+[[ -n "$PERINTAH" ]] || bantuan
+shift
+
+case "$PERINTAH" in
+status) exec "$VENV/bin/sibkd-status" "$@" ;;
+detail) exec "$VENV/bin/sibkd-detail" "$@" ;;
+pengumuman) exec "$VENV/bin/sibkd-pengumuman" "$@" ;;
+unduh) exec "$VENV/bin/sibkd-unduh" "$@" ;;
+unggah) exec "$VENV/bin/sibkd-unggah" "$@" ;;
+sinkron) exec "$VENV/bin/sibkd-sinkron" "$@" ;;
+lanjut) exec "$VENV/bin/sibkd-lanjut" "$@" ;;
+tunda) exec "$VENV/bin/sibkd-tunda" "$@" ;;
+petakan) exec "$PYTHON" -m sibkd_mcp.petakan_form "$@" ;;
+api) exec "$VENV/bin/uvicorn" sibkd_mcp.api:app --port "${PORT:-8000}" "$@" ;;
+mcp) exec "$PYTHON" -m sibkd_mcp.mcp_server "$@" ;;
+uji) exec "$PYTHON" -m pytest "$AKAR/tests" "$@" ;;
+*) bantuan ;;
+esac
